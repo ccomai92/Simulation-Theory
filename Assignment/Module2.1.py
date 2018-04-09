@@ -137,6 +137,6 @@ plt.show()
 # Quick Review Question 4 
 #    deltaX = 30 / 60 
 #    interval = 12 
-#    
+#    [25, 49, 73, 97, ...]
 
  
