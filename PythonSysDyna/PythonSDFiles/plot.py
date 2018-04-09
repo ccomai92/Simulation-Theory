@@ -1,0 +1,1 @@
+# -*- coding: utf-8 -*-#plot.pyimport mathimport graphics# Function to plot a graphdef plot(xLst, yLst):    maxX = max(xLst)    minX = min(xLst)    maxY = max(yLst)    minY = min(yLst)    win = graphics.GraphWin("Plot", 300, 200)    
