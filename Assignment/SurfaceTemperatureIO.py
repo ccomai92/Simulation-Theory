@@ -59,7 +59,7 @@ jDay.mask = mask
 #- print mean, median, and standard deviation of valid 
 #    surface temperatures to the console. 
 
-print(temps.mean())
+print(np.ma.mean(temps))
 print(np.ma.median(temps))
 print(np.ma.std(temps))
     

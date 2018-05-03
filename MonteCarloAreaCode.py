@@ -35,7 +35,7 @@ def do_one_set_sims(num_sims=100, num_darts=1000):
     calculated by the num_sims set of Monte Carlo simulations.
     """
     areas = N.zeros(num_sims, dtype='f')
-    for isim in xrange(num_sims):
+    for isim in range(num_sims):
         areas[isim] = do_one_sim(num_darts)
     return (N.mean(areas), N.std(areas))
 

@@ -108,7 +108,7 @@ for i in range(1, x.size):
     if i != 1 and itox(i) % interval == 0: 
         ingested = absorptionFraction * dosage
     else: 
-        ingested = 0 
+        ingested = 0
     eliminated = (eliminationConstant * drugInSystem[i - 1]) * deltaX
     drugInSystem[i] = (drugInSystem[i - 1] + ingested - eliminated)
 

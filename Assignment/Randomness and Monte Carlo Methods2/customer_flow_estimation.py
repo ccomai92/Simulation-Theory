@@ -81,6 +81,7 @@ for i in np.arange(20):
 colLabels = ['Mean Number of Core Customers', \
             'Mean Number of Casual Customers', 'Mean Number of Total Customers']
 rowLabels = []
+
 data = np.zeros(shape=(21, 3))
 for i in np.arange(20):
     rowLabels.append(i + 1)

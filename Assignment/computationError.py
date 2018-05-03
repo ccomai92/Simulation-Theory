@@ -17,8 +17,9 @@ rError = np.arange(4, dtype='d')   # %
 for i in range(4): 
     aResults[i] = initial * np.exp(0.093 * (i + 1) * 10)
     results[i] = investment(initial, (i + 1) * 10)
-    aError[i] = aResults[i] - results[i] 
-    rError[i] = aError[i] / aResults[i] * 100
+
+aError = aResults - results 
+rError = aError / aResults * 100
 
 print('Absolute Error ($):', aError)
 print('Relative Error (%):', rError)

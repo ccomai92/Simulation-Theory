@@ -48,7 +48,7 @@ def exponential(x, tol = 1e-15):
     
     #- initializing variables 
     result = 0
-    current = 1 # when n = 0, value is always 1. 
+    current = 1.0 # when n = 0, value is always 1.
     count = 1   # therefore, start counting from 1 
    
    #- Calculate current value and add to result
@@ -57,6 +57,7 @@ def exponential(x, tol = 1e-15):
     while tol < current: 
         result += current 
         current = (x**count) / factorial(count)
+        print(current)
         count += 1 
         
     #- return exponential x of Euler's number (e^x) 
