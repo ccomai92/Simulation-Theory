@@ -3,7 +3,6 @@ import numpy.ma as ma
 from environment import Environment
 import matplotlib.pyplot as plt 
 import matplotlib.colors as colors
-import time
 
 class Model(object): 
     
@@ -12,10 +11,7 @@ class Model(object):
         # for AWP init 
         self.AMT_AWP = 1
         self.AMT_AWP_ADJACENT = 0.4
-        self.AMT_AWP_OVER2 = 0.2
-        
-        # for initializing toad
-        self.AMT_MIN_INIT = 0.88 
+        self.AMT_AWP_OVER2 = 0.2 
         
         self.WOULD_LIKE_EAT = 0.9 
         self.WOULD_LIKE_DRINK = 0.9
@@ -24,9 +20,9 @@ class Model(object):
         # For Env 
         #initializing food and water value 
         self.PERCENT_AWPS = 0.01 
-        self.PERCENT_AWPS_FENCED = 0.2
-        self.FOOD_CELL = 0.05
-        self.INIT_PERCENT_TOADS = 0.8  
+        self.PERCENT_AWPS_FENCED = 0.7
+        self.FOOD_CELL = 0.03
+        self.INIT_PERCENT_TOADS = 1.0
         self.MAY_HOP = 0.5 # Toad movement 
         
         
@@ -49,6 +45,7 @@ class Model(object):
             self.execute_each_step()
             self.execute_each_step()
             self.visualization()
+            print("step: ", i)
             self.printStatus()
             
     def visualization(self): 
@@ -57,15 +54,15 @@ class Model(object):
         
         # data for foods 
         foodGrid = ma.masked_array(self.env.foods, self.env.foods < 0.0)
-        cmap = colors.ListedColormap(['0.2', '0.22'])
-        bounds = [0, 0.04, 0.06]
+        cmap = colors.ListedColormap(['0.2', '0.3'])
+        bounds = [0, self.FOOD_CELL, self.FOOD_CELL + 1]
         norm = colors.BoundaryNorm(bounds, cmap.N)
         self.axes.imshow(foodGrid, cmap=cmap, norm=norm)        
         
         # data for awps 
         awpsGrid = ma.masked_array(self.env.awps, self.env.awps < 0.1)
         cmap = colors.ListedColormap(['0.05', '0.1', 'b'])
-        bounds = [0.1, 0.3, 0.6, 1]
+        bounds = [0.1, 0.3, 0.6, 1.1]
         norm = colors.BoundaryNorm(bounds, cmap.N)
         self.axes.imshow(awpsGrid, cmap=cmap, norm=norm)
         
@@ -141,7 +138,7 @@ class Model(object):
 model = Model()
 list_alive = np.zeros(100, dtype=int)
 list_migrated = np.zeros(100, dtype=int)
-for i in np.arange(100): 
+for i in np.arange(1): 
     model.simulation()
     list_alive[i] = model.numAlive
     list_migrated[i] = model.numMigrated

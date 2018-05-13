@@ -98,11 +98,11 @@ class Environment(object):
         
     def _init_Awp(self, y, x):      
         
-        for i in np.arange(3) - 1:
+        for i in np.arange(3) - 1: 
             for j in np.arange(3) - 1:
                 current = self.awps[y + i, x + j]
                 self.awps[y + i, x + j] = \
-                    np.maximum(self.model.AMT_AWP_ADJACENT, current)
+                        np.maximum(self.model.AMT_AWP_ADJACENT, current)
         
     def _init_Awp2(self, y, x):
         for i in np.arange(5) - 2:
@@ -127,11 +127,11 @@ class Environment(object):
             
     def move_toad(self):
         for toad in self.toads: 
-            if toad.water < self.model.WOULD_LIKE_DRINK: 
+            if toad.water <= self.model.WOULD_LIKE_DRINK: 
                 self.toads_here[toad.y, toad.x] = 0
                 toad.hop_for_water()
                 self.toads_here[toad.y, toad.x] = 1
-            elif toad.energy < self.model.WOULD_LIKE_EAT:
+            elif toad.energy <= self.model.WOULD_LIKE_EAT:
                 self.toads_here[toad.y, toad.x] = 0
                 toad.hop_for_food() 
                 self.toads_here[toad.y, toad.x] = 1

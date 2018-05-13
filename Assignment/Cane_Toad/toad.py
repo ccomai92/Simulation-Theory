@@ -12,9 +12,12 @@ class Toad(object):
         self.water_available = \
             self.env.awps[self.y, self.x]
         
-        self.INIT_RANGE = 0.72
-        self.energy = np.random.uniform(0.6, self.INIT_RANGE)
-        self.water = np.random.uniform(0.6, self.INIT_RANGE)
+        self.AMT_MIN_INIT = 0.88
+        self.INIT_RANGE = 0.12
+        self.energy = np.random.uniform(self.AMT_MIN_INIT,\
+                        self.INIT_RANGE + self.AMT_MIN_INIT)
+        self.water = np.random.uniform(self.AMT_MIN_INIT, \
+                        self.INIT_RANGE + self.AMT_MIN_INIT)
     
         self.AMT_EAT = 0.01
         self.AMT_DRINK = 0.05
@@ -27,7 +30,7 @@ class Toad(object):
         
     def eat(self): 
         if (self.food_available > 0):
-            amtEat = np.min([self.food_available, 1.0 - self.energy]) 
+            amtEat = np.min([self.food_available, self.AMT_EAT, 1.0 - self.energy]) 
             self.water = np.min([(self.water + self.FRACTION_WATER * amtEat), 1.0])
             self.energy += amtEat
             self.env.foods[self.y, self.x] -= amtEat
@@ -38,7 +41,8 @@ class Toad(object):
     def drink(self): 
         if (self.water_available > 0):
             original_water = self.water
-            self.water = np.min([self.water + self.AMT_DRINK, 1.0])
+            self.water = np.min([self.water_available, \
+                                self.water + self.AMT_DRINK, 1.0])
             self.env.awps[self.y, self.x] -= (self.water - original_water)
             if self.env.awps[self.y, self.x] == 0: 
                 self.env.is_awps[self.y, self.x] = False
@@ -65,23 +69,25 @@ class Toad(object):
         if self.env.is_toads_ok[self.y + 1, self.x]: 
             north_food = self.env.foods[self.y + 1, self.x]
             foods[0] = north_food
-        elif self.env.is_toads_ok[self.y - 1, self.x]: 
+        if self.env.is_toads_ok[self.y - 1, self.x]: 
             south_food = self.env.foods[self.y - 1, self.x]
             foods[1] = south_food
-        elif self.env.is_toads_ok[self.y, self.x + 1]: 
+        if self.env.is_toads_ok[self.y, self.x + 1]: 
             east_food = self.env.foods[self.y, self.x + 1]
             foods[2] = east_food
-        elif self.env.is_toads_ok[self.y, self.x - 1]: 
+        if self.env.is_toads_ok[self.y, self.x - 1]: 
             west_food = self.env.foods[self.y, self.x - 1]
             foods[3] = west_food
 
     
         if (np.max(foods) == -1): 
-            self.stay_here()
+            self.move_west()
         else: 
             foods, = np.where(foods == np.max(foods))
             np.random.shuffle(foods)
             direction = foods[0]
+            print(direction)
+            print(foods)
             self.env.is_toads_ok[self.y, self.x] = True
             if direction == 0: 
                 self.y += 1 
@@ -104,17 +110,17 @@ class Toad(object):
         
             if self.env.is_toads_ok[self.y + 1, self.x]: 
                 empty[0] = True
-            elif self.env.is_toads_ok[self.y - 1, self.x]: 
+            if self.env.is_toads_ok[self.y - 1, self.x]: 
                 empty[1] = True
-            elif self.env.is_toads_ok[self.y, self.x + 1]: 
+            if self.env.is_toads_ok[self.y, self.x + 1]: 
                 empty[2] = True           
-            elif self.env.is_toads_ok[self.y, self.x - 1]: 
+            if self.env.is_toads_ok[self.y, self.x - 1]: 
                 empty[3] = True 
                 
             empty, = np.where(empty)
             np.random.shuffle(empty)
             if empty.size == 0: 
-                self.stay_here()
+                self.move_west()
             else: 
                 direction = empty[0]
                 self.env.is_toads_ok[self.y, self.x] = True
@@ -122,9 +128,9 @@ class Toad(object):
                     self.y += 1 
                 elif direction == 1:
                     self.y -= 1
-                elif direction ==2:
+                elif direction == 2:
                     self.x += 1
-                else:  
+                elif direction == 3:
                     self.x -= 1
                 self.env.is_toads_ok[self.y, self.x] = False
                 self.food_available = self.env.foods[self.y, self.x]
@@ -133,7 +139,7 @@ class Toad(object):
     
     def move_west(self): 
         if self.env.is_toads_ok[self.y, self.x - 1]:
-            if self.env.is_toads_ok[self.y, self.x]: 
+            if not self.env.is_start_border[self.y, self.x]: 
                 self.env.is_toads_ok[self.y, self.x] = True
             self.x -= 1
             self.env.is_toads_ok[self.y, self.x] = False
@@ -150,19 +156,19 @@ class Toad(object):
         if self.y < 41 and self.env.is_toads_ok[self.y + 1, self.x]: 
             north_moisture = self.env.awps[self.y + 1, self.x]
             moistures[0] = north_moisture
-        elif self.y > 1 and self.env.is_toads_ok[self.y - 1, self.x]: 
+        if self.y > 1 and self.env.is_toads_ok[self.y - 1, self.x]: 
             south_moisture = self.env.awps[self.y - 1, self.x]
             moistures[1] = south_moisture
-        elif self.x < 41 and self.env.is_toads_ok[self.y, self.x + 1]: 
+        if self.x < 41 and self.env.is_toads_ok[self.y, self.x + 1]: 
             east_moisture = self.env.awps[self.y, self.x + 1]
             moistures[2] = east_moisture
-        elif self.x > 1 and self.env.is_toads_ok[self.y, self.x - 1]: 
+        if self.x > 1 and self.env.is_toads_ok[self.y, self.x - 1]: 
             west_moisture = self.env.awps[self.y, self.x - 1]
             moistures[3] = west_moisture
 
     
         if (np.max(moistures) == -1): 
-            self.stay_here()
+            self.move_west()
         else: 
             moistures, = np.where(moistures == np.max(moistures))
             np.random.shuffle(moistures)
@@ -174,7 +180,7 @@ class Toad(object):
                 self.y -= 1
             elif direction ==2:
                 self.x += 1
-            else:  
+            elif direction == 3:  
                 self.x -= 1
             self.env.is_toads_ok[self.y, self.x] = False
             self.food_available = self.env.foods[self.y, self.x]
