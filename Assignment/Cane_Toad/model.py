@@ -1,11 +1,14 @@
-from .environment import Environment
-from .toad import Toad 
+import numpy as np
+import numpy.ma as ma
+from environment import Environment
+import matplotlib.pyplot as plt 
+import matplotlib.colors as colors
+import time
 
 class Model(object): 
     
     def __init__(self):
         # CONSTANTS
-        
         # for AWP init 
         self.AMT_AWP = 1
         self.AMT_AWP_ADJACENT = 0.4
@@ -14,36 +17,91 @@ class Model(object):
         # for initializing toad
         self.AMT_MIN_INIT = 0.88 
         
-        self.DESSICATE = 0.6 
-        self.STARVE = 0.6 
-        self.ENERGY_FOR_HOPING = 0.002
-        self.WATER_FOR_HOPING = 0.002  
         self.WOULD_LIKE_EAT = 0.9 
         self.WOULD_LIKE_DRINK = 0.9
-        self.AMT_EAT = 0.01
-        self.AMT_DRINK = 0.05 
+        
         
         # For Env 
         #initializing food and water value 
         self.PERCENT_AWPS = 0.01 
         self.PERCENT_AWPS_FENCED = 0.2
-        self.FOOD_CELL = 0.05 
-        self.FRACTION_WATER = 0.6 
-        self.INIT_PERCENT_TOADS = 0.8 
-        self.INIT_RANGE = 0.12  
+        self.FOOD_CELL = 0.05
+        self.INIT_PERCENT_TOADS = 0.8  
         self.MAY_HOP = 0.5 # Toad movement 
         
         
         # FOR RUNNING SIMULATION 
-        self.dt = None 
+        self.CYCLES = 1200
+        self.phase = 0
         self.numAlive = 0
         self.numCroaked = 0
         self.numMigrated = 0 
         
-        self.plot_figure = None
-        self.plot_axes = None
-        self.plot_image = None 
-
+        self.figure = None
+        self.axes = None
+        self.image = None 
+    
+    def simulation(self): 
+        self.execute_each_step()
+        self.visualization()
+        for i in np.arange(self.CYCLES): 
+            self.execute_each_step()
+            self.execute_each_step()
+            self.execute_each_step()
+            self.visualization()
+            self.printStatus()
+            
+    def visualization(self): 
+        self.axes = plt.gca()
+        plt.ion()
+        
+        # data for foods 
+        foodGrid = ma.masked_array(self.env.foods, self.env.foods < 0.0)
+        cmap = colors.ListedColormap(['0.2', '0.22'])
+        bounds = [0, 0.04, 0.06]
+        norm = colors.BoundaryNorm(bounds, cmap.N)
+        self.axes.imshow(foodGrid, cmap=cmap, norm=norm)        
+        
+        # data for awps 
+        awpsGrid = ma.masked_array(self.env.awps, self.env.awps < 0.1)
+        cmap = colors.ListedColormap(['0.05', '0.1', 'b'])
+        bounds = [0.1, 0.3, 0.6, 1]
+        norm = colors.BoundaryNorm(bounds, cmap.N)
+        self.axes.imshow(awpsGrid, cmap=cmap, norm=norm)
+        
+        # data for borders
+        borderGrid = ma.masked_array(self.env.foods, self.env.foods > -0.5)
+        cmap = colors.ListedColormap(['k'])
+        bounds = [-2, 0]
+        norm = colors.BoundaryNorm(bounds, cmap.N)
+        self.axes.imshow(borderGrid, cmap=cmap, norm=norm)        
+        
+        # data for toads 
+        toadsGrid = ma.masked_array(self.env.toads_here, self.env.toads_here < 0.5)
+        cmap = colors.ListedColormap(['c'])
+        bounds = [0, 2]
+        norm = colors.BoundaryNorm(bounds, cmap.N)
+        self.axes.imshow(toadsGrid, cmap=cmap, norm=norm)
+        
+        
+        """
+        self.axes.set_xlim(0, 42)
+        self.axes.set_ylim(0, 42)
+        self.axes.xaxis.set_major_locator(plt.MultipleLocator(1.0))
+        self.axes.yaxis.set_major_locator(plt.MultipleLocator(1.0))
+        self.axes.grid(which='major', axis='x', linewidth=0.75, linestyle='-', color='0.75')
+        self.axes.grid(which='major', axis='y', linewidth=0.75, linestyle='-', color='0.75')"""
+        self.axes.set_xticklabels([])
+        self.axes.set_yticklabels([])
+        plt.draw()
+        plt.pause(0.001)
+        plt.show()
+    
+    def printStatus(self):
+        print("numAlive= ", self.numAlive)
+        print("numMigrated= ", self.numMigrated)
+        print("numCroaked= ", self.numCroaked)
+    
     # Simulation Driver to be executed each time step 
     def execute_each_step(self):
         if self.phase == 0:
@@ -57,7 +115,8 @@ class Model(object):
     
     # Phase 0: Initialization phase 
     def phase_zero(self):
-        self.env = Environment(self.PERCENT_AWPS, self.PERCENT_AWPS_FENCED)
+        self.env = Environment(self)
+        self.numAlive = len(self.env.toads)
         self.phase = 1  
     
     # consumption phase of the simulation driver
@@ -71,22 +130,22 @@ class Model(object):
         self.phase = 3
         
     def phase_three(self):
-        dnumAlive, dnumCroaked, dnumMigrated = env.toads.update()
+        dnumAlive, dnumCroaked, dnumMigrated = self.env.updateCount()
         self.numAlive += dnumAlive
         self.numCroaked += dnumCroaked 
         self.numMigrated += dnumMigrated 
         self.phase = 1 
 
-        """env = Environment(percent_awps, fraction_awps_fenced)
-        self.env_list.append(env)
-        init_toads_mask = np.random.binomial(1, env.init_percent_toads,\
-                        size=(self.length - 2), type=bool)
-        for i in range(1, np.size(init_toads_mask)):
-            if (init_toads_mask[i]): 
-                env.list_toads.append(Toad(x_init = env.width - 1, \
-                                           y_init = 1, env=env))
-                """
         
-        
+
+model = Model()
+list_alive = np.zeros(100, dtype=int)
+list_migrated = np.zeros(100, dtype=int)
+for i in np.arange(100): 
+    model.simulation()
+    list_alive[i] = model.numAlive
+    list_migrated[i] = model.numMigrated
+    
+
         
     
